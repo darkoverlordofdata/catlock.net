@@ -1,0 +1,3 @@
+[submodule "modules/X11.Net"]
+	path = modules/X11.Net
+	url = https://github.com/darkoverlordofdata/X11.Net

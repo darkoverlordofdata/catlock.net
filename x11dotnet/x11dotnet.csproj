@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../modules/X11/X11.csproj" />
+    <ProjectReference Include="../modules/X11.Net/X11/X11.csproj" />
     <!-- <PackageReference Include="X11" Version="1.0.6" /> -->
   </ItemGroup>
 

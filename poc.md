@@ -28,7 +28,8 @@ namespace x11dotnet
             }
             
             var s = Xlib.XDefaultScreen(d);
-            Window w = Xlib.XCreateSimpleWindow(d, Xlib.XRootWindow(d, s), 10, 10, 100, 100, 1,
+            Window w = Xlib.XCreateSimpleWindow(d, Xlib.XRootWindow(d, s), 
+                                    10, 10, 100, 100, 1,
                                     Xlib.XBlackPixel(d, s), Xlib.XWhitePixel(d, s));
             Xlib.XSelectInput(d, w, EventMask.ExposureMask | EventMask.KeyPressMask);
             Xlib.XMapWindow(d, w);
@@ -54,7 +55,6 @@ namespace x11dotnet
             Xlib.XCloseDisplay(d);
             
         }
-
     }
 }
 

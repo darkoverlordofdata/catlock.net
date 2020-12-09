@@ -14,6 +14,7 @@ namespace x11dotnet
         private IntPtr vis;
         Colormap cm;
         int depth;
+        public XErrorHandlerDelegate OnError;
 
         static void Main(string[] args)
         {
@@ -62,9 +63,14 @@ namespace x11dotnet
             /* create a window 640x480 */
             win = Xlib.XCreateSimpleWindow(disp, Xlib.XDefaultRootWindow(disp), 
                                         0, 0, 640, 480, 0, 0, 0);
+
+            OnError = ErrorHandler;
+            Xlib.XSetErrorHandler(OnError);
             /* tell X what events we are interested in */
-            Xlib.XSelectInput(disp, win, EventMask.ButtonPressMask | EventMask.ButtonReleaseMask | 
-                            EventMask.PointerMotionMask | EventMask.ExposureMask);
+            Xlib.XSelectInput(disp, win, 
+                    EventMask.ButtonPressMask | EventMask.ButtonReleaseMask | 
+                    EventMask.KeyPressMask |
+                    EventMask.PointerMotionMask | EventMask.ExposureMask);
             /* show the window */
             Xlib.XMapWindow(disp, win);
             /* set our cache to 2 Mb so it doesn't have to go hit the disk as long as */
@@ -74,7 +80,7 @@ namespace x11dotnet
             Imlib.imlib_set_font_cache_size(512 * 1024);
             /* add the ./ttfonts dir to our font path - you'll want a notepad.ttf */
             /* in that dir for the text to display */
-            Imlib.imlib_add_path_to_font_path("./ttfonts");
+            Imlib.imlib_add_path_to_font_path("./data/fonts");
             /* set the maximum number of colors to allocate for 8bpp and less to 128 */
             Imlib.imlib_set_color_usage(128);
             /* dither for depths < 24bpp */
@@ -88,7 +94,8 @@ namespace x11dotnet
 
             IntPtr ev = Marshal.AllocHGlobal(24 * sizeof(long));
 
-            for (;;)
+            var done = false;
+            while (!done)
             {
                 /* image variable */
                 IntPtr image;
@@ -114,9 +121,18 @@ namespace x11dotnet
                                                             expose_event.width, expose_event.height);
                         break;
 
-                    case (int)Event.ButtonPress:
+                    case (int)Event.KeyPress:
                         /* if we click anywhere in the window, exit */
-                        Environment.Exit(0);
+                        var key_event = Marshal.PtrToStructure<X11.XKeyEvent>(ev);
+
+                        X11.KeySym key = Xlib.XKeycodeToKeysym(disp, (KeyCode)key_event.keycode, 0);
+
+                        
+
+                        if (key == KeySym.XK_Escape) {
+                            Console.WriteLine($"{key} / {KeySym.XK_Escape}");
+                            done = true;
+                        }
                         break;
 
                     case (int)Event.MotionNotify:
@@ -124,7 +140,7 @@ namespace x11dotnet
                         /* add a rectangle update for the new mouse position */
                         var motion_event = Marshal.PtrToStructure<X11.XMotionEvent>(ev);
 
-                        image = Imlib.imlib_load_image("./images/mush.png");
+                        image = Imlib.imlib_load_image("./data/images/mush.png");
                         Imlib.imlib_context_set_image(image);
                         w = Imlib.imlib_image_get_width();
                         h = Imlib.imlib_image_get_height();
@@ -196,7 +212,7 @@ namespace x11dotnet
                     /* fill the window background */
                     /* load the background image - you'll need to have some images */
                     /* in ./images lying around for this to actually work */
-                    image = Imlib.imlib_load_image("./images/bg.png");
+                    image = Imlib.imlib_load_image("./data/images/bg.png");
                     /* we're working with this image now */
                     Imlib.imlib_context_set_image(image);
                     /* get its size */
@@ -218,7 +234,7 @@ namespace x11dotnet
                     }
                     
                     /* draw an icon centered around the mouse position */
-                    image = Imlib.imlib_load_image("./images/mush.png");
+                    image = Imlib.imlib_load_image("./data/images/mush.png");
                     Imlib.imlib_context_set_image(image);
                     w = Imlib.imlib_image_get_width();
                     h = Imlib.imlib_image_get_height();
@@ -285,6 +301,10 @@ namespace x11dotnet
                     Imlib.imlib_updates_free(updates);
                 /* loop again waiting for events */
             }
+
+            // Xlib.XFreeGC(disp, gc);
+            Xlib.XDestroyWindow(disp, win);
+            Xlib.XCloseDisplay(disp);
 
         }
 

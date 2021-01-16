@@ -12,4 +12,4 @@ https://developers.redhat.com/blog/2017/09/18/connecting-net-core-d-bus/
 
 dotnet add package Tmds.DBus --version 0.9.1
 
-dotnet run --project ./x11dotnet
+dotnet run --project ./catlock.net

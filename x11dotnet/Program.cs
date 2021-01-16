@@ -93,6 +93,7 @@ namespace x11dotnet
             /* infinite event loop */
 
             IntPtr ev = Marshal.AllocHGlobal(24 * sizeof(long));
+            var home = Environment.GetEnvironmentVariable("HOME");
 
             var done = false;
             while (!done)
@@ -140,7 +141,7 @@ namespace x11dotnet
                         /* add a rectangle update for the new mouse position */
                         var motion_event = Marshal.PtrToStructure<X11.XMotionEvent>(ev);
 
-                        image = Imlib.imlib_load_image("./data/images/mush.png");
+                        image = Imlib.imlib_load_image($"{home}/.local/data/images/mush.png");
                         Imlib.imlib_context_set_image(image);
                         w = Imlib.imlib_image_get_width();
                         h = Imlib.imlib_image_get_height();
@@ -212,7 +213,8 @@ namespace x11dotnet
                     /* fill the window background */
                     /* load the background image - you'll need to have some images */
                     /* in ./images lying around for this to actually work */
-                    image = Imlib.imlib_load_image("./data/images/bg.png");
+                    // image = Imlib.imlib_load_image("./data/images/bg.png");
+                    image = Imlib.imlib_load_image($"{home}/.local/share/catlock/themes/badabing.locked.jpg");
                     /* we're working with this image now */
                     Imlib.imlib_context_set_image(image);
                     /* get its size */
@@ -234,7 +236,7 @@ namespace x11dotnet
                     }
                     
                     /* draw an icon centered around the mouse position */
-                    image = Imlib.imlib_load_image("./data/images/mush.png");
+                    image = Imlib.imlib_load_image($"{home}/.local/data/images/mush.png");
                     Imlib.imlib_context_set_image(image);
                     w = Imlib.imlib_image_get_width();
                     h = Imlib.imlib_image_get_height();

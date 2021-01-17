@@ -4,6 +4,22 @@ using System.Runtime.InteropServices;
 using X11;
 using Imlib2;
 
+// namespace X11
+// {
+//     public partial class Xlib
+//     {
+//         /// <summary>
+//         /// The XNextEvent function copies the first event from the event queue into the specified XEvent structure and
+//         /// then removes it from the queue.If the event queue is empty, XNextEvent flushes the output buffer and blocks
+//         ///  until an event is received.
+//         /// </summary>
+//         /// <param name="display">Connected display</param>
+//         /// <param name="event_return">Pre-allocated buffer to hold the returned event</param>
+//         /// <returns>Zero on error</returns>
+//         [DllImport("libX11.so.6")]
+//         public static extern Status XSetWMProtocols(IntPtr display, Window window, X11.Atom protocols, int count);
+//     }
+// }
 namespace x11dotnet
 {
     class Program
@@ -15,6 +31,10 @@ namespace x11dotnet
         Colormap cm;
         int depth;
         public XErrorHandlerDelegate OnError;
+
+        // Missing from the x11 nuget:
+        [DllImport("libX11.so.6")]
+        public static extern Status XSetWMProtocols(IntPtr display, Window window, out X11.Atom protocols, int count);
 
         static void Main(string[] args)
         {
@@ -73,6 +93,8 @@ namespace x11dotnet
                     EventMask.PointerMotionMask | EventMask.ExposureMask);
             /* show the window */
             Xlib.XMapWindow(disp, win);
+
+
             /* set our cache to 2 Mb so it doesn't have to go hit the disk as long as */
             /* the images we use use less than 2Mb of RAM (that is uncompressed) */
             Imlib.imlib_set_cache_size(2048 * 1024);
@@ -80,7 +102,7 @@ namespace x11dotnet
             Imlib.imlib_set_font_cache_size(512 * 1024);
             /* add the ./ttfonts dir to our font path - you'll want a notepad.ttf */
             /* in that dir for the text to display */
-            Imlib.imlib_add_path_to_font_path("./data/fonts");
+            Imlib.imlib_add_path_to_font_path("/usr/share/fonts/truetype/ubuntuz");
             /* set the maximum number of colors to allocate for 8bpp and less to 128 */
             Imlib.imlib_set_color_usage(128);
             /* dither for depths < 24bpp */
@@ -91,6 +113,9 @@ namespace x11dotnet
             Imlib.imlib_context_set_colormap(cm);
             Imlib.imlib_context_set_drawable(win);
             /* infinite event loop */
+
+            Atom WM_DELETE_WINDOW = Xlib.XInternAtom(disp, "WM_DELETE_WINDOW", false); 
+            XSetWMProtocols(disp, win, out WM_DELETE_WINDOW, 1);
 
             IntPtr ev = Marshal.AllocHGlobal(24 * sizeof(long));
             var home = Environment.GetEnvironmentVariable("HOME");
@@ -112,6 +137,14 @@ namespace x11dotnet
                     var xevent = Marshal.PtrToStructure<X11.XAnyEvent>(ev);
                     switch (xevent.type)
                     {
+                    case (int)Event.ClientMessage:
+                        // TODO Should check here for other client message types - 
+                        // however as the only protocol registered above is WM_DELETE_WINDOW
+                        // it is safe for this small example.
+                        done = true;
+                        Console.WriteLine("Client Message");
+                        break;
+
                     case (int)Event.Expose:
                         /* window rectangle was exposed - add it to the list of */
                         /* rectangles we need to re-render */
@@ -141,7 +174,7 @@ namespace x11dotnet
                         /* add a rectangle update for the new mouse position */
                         var motion_event = Marshal.PtrToStructure<X11.XMotionEvent>(ev);
 
-                        image = Imlib.imlib_load_image($"{home}/.local/data/images/mush.png");
+                        image = Imlib.imlib_load_image($"{home}/.local/share/data/images/Arrow.png");
                         Imlib.imlib_context_set_image(image);
                         w = Imlib.imlib_image_get_width();
                         h = Imlib.imlib_image_get_height();
@@ -151,7 +184,7 @@ namespace x11dotnet
                         updates = Imlib.imlib_update_append_rect(updates,
                                                             mouse_x - (w / 2), mouse_y - (h / 2),
                                                             w, h);
-                        font = Imlib.imlib_load_font("notepad/30");
+                        font = Imlib.imlib_load_font("Ubuntu-M/30");
                         if (font != IntPtr.Zero)    
                         {
                             Imlib.imlib_context_set_font(font);
@@ -169,7 +202,7 @@ namespace x11dotnet
                         updates = Imlib.imlib_update_append_rect(updates,
                                                             mouse_x - (w / 2), mouse_y - (h / 2),
                                                             w, h);
-                        font = Imlib.imlib_load_font("notepad/30");
+                        font = Imlib.imlib_load_font("Ubuntu-M/30");
                         if (font != IntPtr.Zero)    
                         {
                             Imlib.imlib_context_set_font(font);
@@ -236,7 +269,7 @@ namespace x11dotnet
                     }
                     
                     /* draw an icon centered around the mouse position */
-                    image = Imlib.imlib_load_image($"{home}/.local/data/images/mush.png");
+                    image = Imlib.imlib_load_image($"{home}/.local/share/data/images/Arrow.png");
                     Imlib.imlib_context_set_image(image);
                     w = Imlib.imlib_image_get_width();
                     h = Imlib.imlib_image_get_height();
@@ -270,7 +303,7 @@ namespace x11dotnet
                     Imlib.imlib_free_color_range();
                     
                     /* draw text - centered with the current mouse x, y */
-                    font = Imlib.imlib_load_font("notepad/30");
+                    font = Imlib.imlib_load_font("Ubuntu-M/30");
                     if (font != IntPtr.Zero)
                     {
                         /* set the current font */
@@ -303,6 +336,7 @@ namespace x11dotnet
                     Imlib.imlib_updates_free(updates);
                 /* loop again waiting for events */
             }
+            Marshal.FreeHGlobal(ev);
 
             // Xlib.XFreeGC(disp, gc);
             Xlib.XDestroyWindow(disp, win);

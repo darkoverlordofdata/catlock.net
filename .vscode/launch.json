@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/x11dotnet/bin/Debug/net5.0/x11dotnet.dll",
+            "program": "${workspaceFolder}/catlock.net/bin/Debug/net5.0/catlock.net.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/x11dotnet",
+            "cwd": "${workspaceFolder}/catlock.net",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false

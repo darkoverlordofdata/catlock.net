@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/x11dotnet/x11dotnet.csproj",
+                "${workspaceFolder}/catlock.net/catlock.net.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -23,7 +23,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/x11dotnet/x11dotnet.csproj",
+                "${workspaceFolder}/catlock.net/catlock.net.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -36,7 +36,7 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/x11dotnet/x11dotnet.csproj",
+                "${workspaceFolder}/catlock.net/catlock.net.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
